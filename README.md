@@ -14,32 +14,17 @@
 
 > 在菜单栏展示最新 VIX 数值；点击图标可打开弹出面板查看详情（最新值、更新时间、手动刷新与退出）。
 
-## 目录
-
-- 介绍与特性
-- 效果预览
-- 环境要求
-- 安装与使用（普通用户）
-- 从源码构建（开发者）
-- 自定义与配置
-- 常见问题与排查
-- 隐私与数据来源
-- 贡献与开发
-- 许可证
-
 ## 介绍与特性
 
 - 菜单栏图标 + 实时数值显示
 - 弹出面板展示最新数值与更新时间，支持手动刷新
 - 自动周期拉取（默认 60 秒）
-- 自定义菜单栏图标（`Assets.xcassets` 中的 `VIXIcon`）
-- 深色/浅色模式友好
 
 提示：本项目仅读取 Yahoo Finance 公开接口，不收集或上传任何用户隐私数据。
 
 ## 效果预览
 
-![预览占位图（请替换为实际截图）](docs/image1.png)
+![预览占位图](docs/image1.png)
 
 ## 环境要求
 
@@ -78,45 +63,8 @@
    - 使用 Developer ID 对应用签名与公证（notarize），避免 Gatekeeper 阻止用户启动。
    - 参考 Apple 文档完成公证流程；签名示例命令请根据你的证书调整（可在 README 历史版本中查看样例）。
 
-## 自定义与配置
-
-### 自定义菜单栏图标
-- 项目优先使用 `Assets.xcassets` 中名为 `VIXIcon` 的资源（若不存在则回退到 SF Symbol `chart.line.uptrend.xyaxis`）。
-- 推荐使用单个向量 PDF（Template Image）或 PNG。菜单栏图标建议 18×18pt（@2x 为 36×36px）。
-
 ### 刷新间隔
 - 默认 60 秒。若需修改，可在代码中调整对应常量（后续可加入 UI 配置）。
-
-## 常见问题与排查
-
-<details>
-<summary>1) 启动报网络权限错误（如 NSPOSIXErrorDomain Code=1 "Operation not permitted"）</summary>
-
-原因：启用了 App Sandbox 但未勾选网络权限。
-
-解决：在 Signing & Capabilities 中启用 `App Sandbox` 并勾选 `Outgoing Connections (Client)`，或在 `.entitlements` 中加入：
-
-```xml
-<key>com.apple.security.app-sandbox</key>
-<true/>
-<key>com.apple.security.network.client</key>
-<true/>
-```
-</details>
-
-<details>
-<summary>2) 菜单栏显示 "--" 或数据不更新</summary>
-
-- 在 Xcode/Console.app 查看日志，确认网络是否可用，是否被本地代理/VPN 干扰。
-- 稍后再试：Yahoo Finance 接口偶尔会短暂失败。
-</details>
-
-<details>
-<summary>3) 自定义图标未生效</summary>
-
-- 确认 `Assets.xcassets` 中存在名为 `VIXIcon` 的 Image Set，`Render As` 设为 Template 或直接使用 PDF（Preserve Vector Data）。
-- Clean 构建并重启应用。
-</details>
 
 ## 隐私与数据来源
 
@@ -127,20 +75,8 @@
 
 欢迎 Issue / PR！
 
-建议方向：
-- 支持更多指数/标的、可配置刷新间隔
-- 更完善的图标与深色模式适配
-- GitHub Actions 自动打包、Release
-
 ## 许可证
 
 本项目采用 MIT 许可证发布。你可以自由地使用、修改和分发本软件。若将来在仓库中添加 `LICENSE` 文件，GitHub 将自动识别许可协议。
 
 ---
-
-附：如果你需要我帮忙：
-- 生成一个示例 `VIXIcon`（SVG/PDF/PNG）
-- 添加英文版 README 或自动打包脚本（GitHub Actions）
-- 准备 Release 说明模板
-
-告诉我你的偏好，我可以一起补齐。
