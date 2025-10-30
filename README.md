@@ -1,74 +1,102 @@
+<div align="center">
+
 # VIXMenuBar
 
-VIXMenuBar 是一个轻量的 macOS 菜单栏应用，用来在菜单栏和弹出面板中展示 VIX（恐慌指数）最新数值。应用会定时从 Yahoo Finance 获取数据并显示在状态栏，点击图标可以展开弹出面板查看详情（最新值、更新时间、刷新与退出按钮）。
+轻量、开源的 macOS 菜单栏应用，用于显示 VIX（恐慌指数）最新数值（数据来源：Yahoo Finance）。
 
-功能
+[![platform](https://img.shields.io/badge/platform-macOS-000000?logo=apple&logoColor=white)](#)
+[![swift](https://img.shields.io/badge/Swift-5.7%2B-FA7343?logo=swift&logoColor=white)](#)
+[![xcode](https://img.shields.io/badge/Xcode-14%2B-1575F9?logo=xcode&logoColor=white)](#)
+[![ui](https://img.shields.io/badge/SwiftUI-%2B%20AppKit-43a047)](#)
+[![license](https://img.shields.io/badge/License-MIT-44CC11)](#license)
+
+</div>
+
+> 在菜单栏展示最新 VIX 数值；点击图标可打开弹出面板查看详情（最新值、更新时间、手动刷新与退出）。
+
+## 目录
+
+- 介绍与特性
+- 效果预览
+- 环境要求
+- 安装与使用（普通用户）
+- 从源码构建（开发者）
+- 自定义与配置
+- 常见问题与排查
+- 隐私与数据来源
+- 贡献与开发
+- 许可证
+
+## 介绍与特性
+
 - 菜单栏图标 + 实时数值显示
-- 弹出面板展示最新数值与更新时间
-- 自动周期拉取（默认 60 秒）和手动刷新
-- 支持自定义菜单栏图标（放入 Assets.xcassets 中的 `VIXIcon`）
+- 弹出面板展示最新数值与更新时间，支持手动刷新
+- 自动周期拉取（默认 60 秒）
+- 自定义菜单栏图标（`Assets.xcassets` 中的 `VIXIcon`）
+- 深色/浅色模式友好
 
-注意：本项目只是读取公开的 Yahoo Finance 接口，不收集用户隐私数据。
+提示：本项目仅读取 Yahoo Finance 公开接口，不收集或上传任何用户隐私数据。
 
-快速开始（开发者）
+## 效果预览
 
-前提
-- macOS（建议使用较新版本的 macOS）
-- Xcode（建议 Xcode 14+）
+> 你可以在项目 push 到 GitHub 后，将截图或动图放到 `docs/` 目录，并把下方链接替换为你的图片路径。
 
-构建并运行
-1. 在 Finder 中打开本仓库，双击 `VIXMenuBar.xcodeproj` 或在 Xcode 中打开项目。
-2. 选择目标 `VIXMenuBar`，连接一个 macOS 运行目标（默认为 My Mac）。
-3. 点击 Run（或使用 ⌘R）启动应用。首次启动会在菜单栏创建一个图标并尽快拉取数据。
+![预览占位图（请替换为实际截图）](docs/screenshot.png)
 
-替换或自定义图标
-- 项目中会优先使用 `Assets.xcassets` 中名为 `VIXIcon` 的资源（如果存在）。否则会回退到 SF Symbol `chart.line.uptrend.xyaxis`。
-- 推荐使用单个向量 PDF（Template Image），或准备 PNG：菜单栏图标建议使用 18×18pt（@2x 为 36×36px）。
-  - 推荐做法：在 `Assets.xcassets` 新建 Image Set，命名为 `VIXIcon`，将 `Render As` 设置为 `Template Image`（或者使用 PDF 并勾选 Preserve Vector Data）。
-- 修改后在 Xcode 中重新构建即可看到新图标。
+## 环境要求
 
-打包与分发（给最终用户）
+- macOS 12+（建议更高版本）
+- Xcode 14+（Swift 5.7+）
 
-1. 签名与沙盒
-   - 若你希望在 App Store 或带沙盒的环境下发布，请在 Xcode 的 Signing & Capabilities 中添加适当的签名证书并启用 `App Sandbox`。
-   - 如果启用了 `App Sandbox`，请在 `Capabilities` 中勾选 `Outgoing Connections (Client)`（`com.apple.security.network.client`），否则网络访问（URLSession）会被拒绝并报 `Operation not permitted`。
+## 安装与使用（普通用户）
+
+将来发布到 GitHub Releases 后，普通用户可直接下载 `.dmg` 或 `.zip`。在此之前，你可以通过“从源码构建”自行使用。
+
+首次启动后：
+- 菜单栏会出现图标与数值。
+- 默认每 60 秒自动刷新；也可在弹出面板中手动刷新。
+
+关于来自“未知开发者”的提示：
+- 如果是未签名应用，macOS 可能会阻止启动；可在“系统设置 → 隐私与安全 → 仍要打开”放行，或使用 Finder 中“右键 → 打开”。
+- 推荐后续使用开发者 ID 进行签名与公证，详见下文“打包与分发”。
+
+## 从源码构建（开发者）
+
+1) 打开项目
+- 双击 `VIXMenuBar.xcodeproj` 或在 Xcode 中手动打开。
+
+2) 选择运行目标
+- Target：`VIXMenuBar`，运行目标为你的 My Mac。
+
+3) 运行
+- 点击 Run（⌘R）。首次运行会立即拉取一次数据并显示在菜单栏。
+
+### 打包与分发（可选）
+
+1. 签名与沙盒（App Sandbox）
+   - 若在沙盒环境发布，需在 Signing & Capabilities 中启用 `App Sandbox`，并勾选 `Outgoing Connections (Client)`（`com.apple.security.network.client`）。
 
 2. 代码签名与公证（推荐）
-   - 为避免 Gatekeeper 阻止用户运行，建议使用你的 Developer ID 对应用进行代码签名并完成 Apple 的公证流程（notarize）。
-   - 简单签名步骤（示例）：
+   - 使用 Developer ID 对应用签名与公证（notarize），避免 Gatekeeper 阻止用户启动。
+   - 参考 Apple 文档完成公证流程；签名示例命令请根据你的证书调整（可在 README 历史版本中查看样例）。
 
-```bash
-# 本地签名（请替换为你的开发者 ID）
-codesign --deep --force --verify --verbose --sign "Developer ID Application: Your Name (TEAMID)" /path/to/VIXMenuBar.app
+## 自定义与配置
 
-# 将应用提交给 Apple 公证（需要 Xcode / altool / notarytool 配置）
-# 请参考 Apple 官方文档进行 notarize 步骤
-```
+### 自定义菜单栏图标
+- 项目优先使用 `Assets.xcassets` 中名为 `VIXIcon` 的资源（若不存在则回退到 SF Symbol `chart.line.uptrend.xyaxis`）。
+- 推荐使用单个向量 PDF（Template Image）或 PNG。菜单栏图标建议 18×18pt（@2x 为 36×36px）。
 
-3. 未签名应用或来自“未知来源”的提示
-- 如果你直接把未签名的 `.app` 发给用户，macOS Gatekeeper 可能阻止打开并在“安全性与隐私”中显示“已阻止来自不明开发者的应用”。
-- 常见允许方法（用户端）：
-  1. 在 Finder 中选中 `VIXMenuBar.app`，按住 Control 键点击（或右键）→ 选择「打开」。
-  2. 系统会弹出确认对话框，点击「打开」。这会把该应用标记为已认可，之后可以正常打开。
-  3. 如果应用已经被阻止，可去：系统设置 → 隐私与安全 → 在 "通用"（General）区域找到 “仍要打开”/“允许” 的按钮并点击。
+### 刷新间隔
+- 默认 60 秒。若需修改，可在代码中调整对应常量（后续可加入 UI 配置）。
 
-- 另一个临时方法（高级用户/开发者）：
+## 常见问题与排查
 
-```bash
-# 移除文件的 quarantine 标记（使系统认为是本地可信文件）
-xattr -r -d com.apple.quarantine /path/to/VIXMenuBar.app
+<details>
+<summary>1) 启动报网络权限错误（如 NSPOSIXErrorDomain Code=1 "Operation not permitted"）</summary>
 
-# 或者在终端中允许该应用（将其加入受信任列表）
-spctl --add /path/to/VIXMenuBar.app
-```
+原因：启用了 App Sandbox 但未勾选网络权限。
 
-注意：这些命令会改变系统对应用的信任处理；仅在你信任该应用时使用。长期发布建议使用正式的代码签名与公证流程。
-
-常见问题与排查
-
-1. 启动后出现网络权限错误（示例：NSPOSIXErrorDomain Code=1 "Operation not permitted"）
-   - 原因：App 启用了 App Sandbox，但没有 entitlements 中的 `com.apple.security.network.client`。
-   - 解决：在 Xcode 的 Signing & Capabilities 中确保 `App Sandbox` 已启用且勾选 `Outgoing Connections (Client)`，或者在你的 `.entitlements` 中加入：
+解决：在 Signing & Capabilities 中启用 `App Sandbox` 并勾选 `Outgoing Connections (Client)`，或在 `.entitlements` 中加入：
 
 ```xml
 <key>com.apple.security.app-sandbox</key>
@@ -76,31 +104,45 @@ spctl --add /path/to/VIXMenuBar.app
 <key>com.apple.security.network.client</key>
 <true/>
 ```
+</details>
 
-2. 菜单栏图标显示 `--` 或不更新
-   - 检查控制台日志：应用在启动时会打印诊断信息（包括 network client entitlement、system proxy settings、以及 fetch 的错误信息）。
-   - 确保网络可用，并确认是否有本地代理（127.0.0.1:xxx）或 VPN 干扰网络请求。
+<details>
+<summary>2) 菜单栏显示 "--" 或数据不更新</summary>
 
-3. 菜单栏图标没有显示自定义图标
-   - 确认 `Assets.xcassets` 中存在名为 `VIXIcon` 的 Image Set，且类型为 Template 或 使用 PDF。
-   - 清理缓存并重启应用（在 Xcode 中 Clean，然后重新运行）。
+- 在 Xcode/Console.app 查看日志，确认网络是否可用，是否被本地代理/VPN 干扰。
+- 稍后再试：Yahoo Finance 接口偶尔会短暂失败。
+</details>
 
-隐私与数据来源说明
+<details>
+<summary>3) 自定义图标未生效</summary>
 
-- 本应用只从 Yahoo Finance 的公开 API（query1.finance.yahoo.com）获取公开行情数据，不收集或上传任何本地用户数据。
-- 若你修改或扩展数据来源，请在 README 或应用内告知用户并遵守相应服务的使用条款。
+- 确认 `Assets.xcassets` 中存在名为 `VIXIcon` 的 Image Set，`Render As` 设为 Template 或直接使用 PDF（Preserve Vector Data）。
+- Clean 构建并重启应用。
+</details>
 
-贡献与发布
+## 隐私与数据来源
 
-欢迎提交 issue 与 PR。常见改进方向：
-- 添加更多指数/股票支持
-- 自定义刷新间隔或通知提醒
-- 更好的图标与深色模式适配
+- 仅访问 Yahoo Finance 公开接口（https://query1.finance.yahoo.com）获取行情数据；不采集、不上传任何本地用户数据。
+- 若你扩展或更换数据源，请遵守相应服务的使用条款并在文档或应用内告知用户。
 
-许可证
+## 贡献与开发
 
-本项目默认使用 MIT 许可证（你可以根据需要修改）。
+欢迎 Issue / PR！
+
+建议方向：
+- 支持更多指数/标的、可配置刷新间隔
+- 更完善的图标与深色模式适配
+- GitHub Actions 自动打包、Release
+
+## 许可证
+
+本项目采用 MIT 许可证发布。你可以自由地使用、修改和分发本软件。若将来在仓库中添加 `LICENSE` 文件，GitHub 将自动识别许可协议。
 
 ---
 
-如果你希望我生成一个示例 `VIXIcon`（SVG/PDF/PNG），或者把 README 翻译成英文版、增加发布（release）流程脚本，我可以继续帮你生成或写出示例资源和脚本。
+附：如果你需要我帮忙：
+- 生成一个示例 `VIXIcon`（SVG/PDF/PNG）
+- 添加英文版 README 或自动打包脚本（GitHub Actions）
+- 准备 Release 说明模板
+
+告诉我你的偏好，我可以一起补齐。

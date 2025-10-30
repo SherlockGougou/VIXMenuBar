@@ -1,0 +1,43 @@
+# macOS
+.DS_Store
+.AppleDouble
+.LSOverride
+Icon
+
+# Xcode
+DerivedData/
+build/
+*.xcuserstate
+*.xccheckout
+*.xcscmblueprint
+
+# Xcode user data (should not be committed)
+**/xcuserdata/
+
+# Swift Package Manager
+.swiftpm/
+.build/
+
+# CocoaPods (not used, but safe)
+Pods/
+
+# Carthage (not used, but safe)
+Carthage/Build/
+
+# Fastlane (if used later)
+fastlane/report.xml
+fastlane/Preview.html
+fastlane/screenshots/
+fastlane/test_output/
+
+# Logs
+*.log
+
+# Archives / products
+*.ipa
+*.dSYM
+*.dSYM.zip
+*.framework.zip
+
+# Temporary
+.tmp/

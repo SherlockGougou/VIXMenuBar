@@ -1,8 +1,8 @@
-# VIXMenuBar
+# VIXMenuBar（模块说明）
 
-轻量 macOS 菜单栏应用，用于显示 VIX（恐慌指数）的最新数值（来源：Yahoo Finance）。
+这是应用源代码所在的模块目录。完整的项目介绍、安装与使用、常见问题等文档请查看仓库根目录的 README：参见 ../README.md。
 
-本仓库包含一个小型 SwiftUI + AppKit 的菜单栏工具：在状态栏展示图标与最新数值，点击图标弹出面板可以查看最新值、更新时间、手动刷新和退出按钮。
+简述：使用 SwiftUI + AppKit 构建的 macOS 菜单栏应用，显示 VIX（恐慌指数）最新数值（数据来自 Yahoo Finance），默认每 60 秒自动刷新，支持手动刷新。
 
 ---
 
