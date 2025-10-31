@@ -10,5 +10,10 @@
 	<true/>
 	<key>com.apple.security.network.client</key>
 	<true/>
+	<!-- Allow user-selected read-write for potential file interactions (general convenience) -->
+	<key>com.apple.security.files.user-selected.read-write</key>
+	<true/>
+	<!-- ServiceManagement requires no special entitlement for SMAppService.mainApp,
+	     but keep sandbox/network as configured. -->
 </dict>
 </plist>

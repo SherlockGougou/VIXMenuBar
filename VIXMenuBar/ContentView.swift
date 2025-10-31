@@ -6,6 +6,8 @@ struct ContentView: View {
     @AppStorage("launchAtLogin") private var launchAtLogin: Bool = false
     @State private var showErrorAlert = false
     @State private var errorMessage: String?
+    @State private var isChangingLoginItem = false
+    @State private var suppressNextToggleChange = false
 
     var body: some View {
         VStack(alignment: .leading, spacing: 10) {
@@ -47,8 +49,27 @@ struct ContentView: View {
                 Text("Launch at Login")
             }
             .onChange(of: launchAtLogin) { oldValue, newValue in
-                Task {
+                // Debounce rapid toggles and avoid re-entrancy
+                if suppressNextToggleChange {
+                    suppressNextToggleChange = false
+                    return
+                }
+                guard !isChangingLoginItem else { return }
+                isChangingLoginItem = true
+                Task { @MainActor in
                     await setLaunchAtLogin(enabled: newValue)
+                    // After attempting change, reflect real status from system to keep UI consistent
+                    suppressNextToggleChange = true
+                    self.launchAtLogin = LaunchAtLogin.isEnabled()
+                    isChangingLoginItem = false
+                }
+            }
+            .onAppear {
+                // sync toggle with actual system setting at app start
+                let current = LaunchAtLogin.isEnabled()
+                if launchAtLogin != current {
+                    suppressNextToggleChange = true
+                    launchAtLogin = current
                 }
             }
 
@@ -85,11 +106,24 @@ struct ContentView: View {
             } else {
                 try LaunchAtLogin.disable()
             }
-        } catch {
-            // On error, revert the toggle and show an alert
+            // Sync with actual status (may require user approval)
             DispatchQueue.main.async {
-                launchAtLogin = !enabled
-                errorMessage = String(describing: error)
+                launchAtLogin = LaunchAtLogin.isEnabled()
+            }
+        } catch {
+            let friendly: String
+            let msg = String(describing: error)
+            if msg.contains("Operation not permitted") {
+                friendly = "系统不允许更改登录项。请在 系统设置 → 通用 → 登录项 中手动允许或移除本应用。"
+            } else if msg.contains("unsupported") {
+                friendly = "当前系统版本不支持此功能（需要 macOS 13+）。"
+            } else {
+                friendly = msg
+            }
+            DispatchQueue.main.async {
+                // Re-sync from system instead of naive revert to avoid mismatch
+                launchAtLogin = LaunchAtLogin.isEnabled()
+                errorMessage = friendly
                 showErrorAlert = true
             }
         }

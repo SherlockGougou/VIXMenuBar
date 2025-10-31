@@ -1,82 +1,59 @@
 import Foundation
+import AppKit
+import ServiceManagement
 
 enum LaunchAtLoginError: Error {
-    case cannotCreateDirectory
-    case cannotWritePlist(Error)
-    case cannotRemovePlist(Error)
-    case launchctlError(String)
+    case unsupported
+    case registrationFailed(Error?)
+    case unregistrationFailed(Error?)
 }
 
 struct LaunchAtLogin {
+    // Keep label for potential legacy fallback if ever needed
     static let label = "com.gouqinglin.VIXMenuBar"
 
-    static var plistURL: URL {
-        let fm = FileManager.default
-        return fm.homeDirectoryForCurrentUser
-            .appendingPathComponent("Library/LaunchAgents")
-            .appendingPathComponent("\(label).plist")
-    }
-
     static func isEnabled() -> Bool {
-        let fm = FileManager.default
-        return fm.fileExists(atPath: plistURL.path)
+        if #available(macOS 13.0, *) {
+            return SMAppService.mainApp.status == .enabled
+        } else {
+            return false
+        }
     }
 
     static func enable() throws {
-        let fm = FileManager.default
-        let dir = plistURL.deletingLastPathComponent()
+        guard #available(macOS 13.0, *) else { throw LaunchAtLoginError.unsupported }
         do {
-            try fm.createDirectory(at: dir, withIntermediateDirectories: true)
+            try SMAppService.mainApp.register()
+            // If the system requires user approval, take them to the correct pane
+            if SMAppService.mainApp.status == .requiresApproval {
+                SMAppService.openSystemSettingsLoginItems()
+            }
         } catch {
-            throw LaunchAtLoginError.cannotCreateDirectory
+            // Most common failure: Operation not permitted (user or policy disallows)
+            if #available(macOS 13.0, *) {
+                SMAppService.openSystemSettingsLoginItems()
+            }
+            throw LaunchAtLoginError.registrationFailed(error)
         }
-
-        let programPath = Bundle.main.bundlePath
-
-        let dict: [String: Any] = [
-            "Label": label,
-            "ProgramArguments": ["/usr/bin/open", "-a", programPath],
-            "RunAtLoad": true,
-            "KeepAlive": false
-        ]
-
-        do {
-            let data = try PropertyListSerialization.data(fromPropertyList: dict, format: .xml, options: 0)
-            try data.write(to: plistURL, options: .atomic)
-        } catch {
-            throw LaunchAtLoginError.cannotWritePlist(error)
-        }
-
-        // We intentionally do not call `launchctl bootstrap` here because it frequently
-        // fails when called from inside apps due to system restrictions. Writing the plist
-        // to ~/Library/LaunchAgents is sufficient: launchd will load it at next login.
     }
 
     static func disable() throws {
-        let fm = FileManager.default
+        guard #available(macOS 13.0, *) else { throw LaunchAtLoginError.unsupported }
+        let status = SMAppService.mainApp.status
+        // If not enabled, do nothing
+        guard status == .enabled || status == .requiresApproval else { return }
         do {
-            if fm.fileExists(atPath: plistURL.path) {
-                try fm.removeItem(at: plistURL)
+            try SMAppService.mainApp.unregister()
+            if SMAppService.mainApp.status == .requiresApproval {
+                SMAppService.openSystemSettingsLoginItems()
             }
         } catch {
-            throw LaunchAtLoginError.cannotRemovePlist(error)
+            if #available(macOS 13.0, *) {
+                SMAppService.openSystemSettingsLoginItems()
+            }
+            throw LaunchAtLoginError.unregistrationFailed(error)
         }
     }
 
-    // Helper to run launchctl if manual load/unload is desired (not used by default)
-    private static func runLaunchctl(args: [String]) throws {
-        let process = Process()
-        process.executableURL = URL(fileURLWithPath: "/bin/launchctl")
-        process.arguments = args
-        let pipe = Pipe()
-        process.standardOutput = pipe
-        process.standardError = pipe
-        try process.run()
-        process.waitUntilExit()
-        let data = pipe.fileHandleForReading.readDataToEndOfFile()
-        if process.terminationStatus != 0 {
-            let str = String(data: data, encoding: .utf8) ?? ""
-            throw LaunchAtLoginError.launchctlError(str)
-        }
-    }
+    // No other helpers needed with SMAppService on modern macOS
 }

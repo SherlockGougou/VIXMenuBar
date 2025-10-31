@@ -39,6 +39,11 @@
 - 菜单栏会出现图标与数值。
 - 默认每 60 秒自动刷新；也可在弹出面板中手动刷新。
 
+登录时启动（Launch at Login）
+- 从 macOS 13 起，应用通过系统提供的 ServiceManagement API 将自身添加到“系统设置 → 通用 → 登录项”。
+- 第一次开启时，系统可能需要你的批准；若需要，会自动跳转到“登录项”页面，请在列表中允许该应用。
+- 之后系统会在你登录 macOS 时自动启动本应用。
+
 关于来自“未知开发者”的提示：
 - 如果是未签名应用，macOS 可能会阻止启动；可在“系统设置 → 隐私与安全 → 仍要打开”放行，或使用 Finder 中“右键 → 打开”。
 - 推荐后续使用开发者 ID 进行签名与公证，详见下文“打包与分发”。
@@ -58,6 +63,7 @@
 
 1. 签名与沙盒（App Sandbox）
    - 若在沙盒环境发布，需在 Signing & Capabilities 中启用 `App Sandbox`，并勾选 `Outgoing Connections (Client)`（`com.apple.security.network.client`）。
+   - 使用 `SMAppService.mainApp` 无需额外的登录项辅助程序；建议使用开发者 ID 对应用进行签名以获得最佳用户体验。
 
 2. 代码签名与公证（推荐）
    - 使用 Developer ID 对应用签名与公证（notarize），避免 Gatekeeper 阻止用户启动。
